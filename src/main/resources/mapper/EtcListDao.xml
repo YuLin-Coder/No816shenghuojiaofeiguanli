@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.EtcListDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.etc_id as etcId
+        ,a.etc_list_old_money as etcListOldMoney
+        ,a.etc_list_new_money as etcListNewMoney
+        ,a.insert_time as insertTime
+        ,a.success_types as successTypes
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.EtcListView" >
+        SELECT
+        <include refid="Base_Column_List" />
+
+--         级联表的字段
+        ,etc.yonghu_id as yonghuId
+        ,etc.etc_number as etcNumber
+        ,etc.etc_money as etcMoney
+        ,etc.etc_address as etcAddress
+
+        FROM etc_list  a
+        left JOIN etc etc ON a.etc_id = etc.id
+
+        <where>
+            <if test="params.etcId != null">
+                and a.etc_id = #{params.etcId}
+            </if>
+            <if test="params.etcListOldMoneyStart != null ">
+                <![CDATA[  and a.etc_list_old_money >= #{params.etcListOldMoneyStart}   ]]>
+            </if>
+            <if test="params.etcListOldMoneyEnd != null ">
+                <![CDATA[  and a.etc_list_old_money <= #{params.etcListOldMoneyEnd}   ]]>
+            </if>
+            <if test="params.etcListNewMoneyStart != null ">
+                <![CDATA[  and a.etc_list_new_money >= #{params.etcListNewMoneyStart}   ]]>
+            </if>
+            <if test="params.etcListNewMoneyEnd != null ">
+                <![CDATA[  and a.etc_list_new_money <= #{params.etcListNewMoneyEnd}   ]]>
+            </if>
+            <if test=" params.insertTimeStart != '' and params.insertTimeStart != null ">
+                <![CDATA[  and DATE_FORMAT(a.insert_time, '%Y-%m-%d %H:%T:%s') >=
+                DATE_FORMAT(#{params.insertTimeStart}, '%Y-%m-%d %H:%T:%s')   ]]>
+            </if>
+            <if test=" params.insertTimeEnd != '' and params.insertTimeEnd != null ">
+                <![CDATA[  and DATE_FORMAT(a.insert_time, '%Y-%m-%d %H:%T:%s') <=
+                DATE_FORMAT(#{params.insertTimeEnd} , '%Y-%m-%d %H:%T:%s')    ]]>
+            </if>
+            <if test="params.successTypes != null">
+                and a.success_types = #{params.successTypes}
+            </if>
+
+            <if test="params.yonghuId != null">
+                and etc.yonghu_id = #{params.yonghuId}
+            </if>
+            <if test=" params.etcNumber != '' and params.etcNumber != null and params.etcNumber != 'null' ">
+                and etc.etc_number like CONCAT('%',#{params.etcNumber},'%')
+            </if>
+            <if test="params.etcMoneyStart != null ">
+                <![CDATA[  and etc.etc_money >= #{params.etcMoneyStart}   ]]>
+            </if>
+            <if test="params.etcMoneyEnd != null ">
+                <![CDATA[  and etc.etc_money <= #{params.etcMoneyEnd}   ]]>
+            </if>
+            <if test=" params.etcAddress != '' and params.etcAddress != null and params.etcAddress != 'null' ">
+                and etc.etc_address like CONCAT('%',#{params.etcAddress},'%')
+            </if>
+        </where>
+        order by a.${params.orderBy} desc
+    </select>
+
+</mapper>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.GongnuanListDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.gongnuan_id as gongnuanId
+        ,a.gongnuan_list_old_money as gongnuanListOldMoney
+        ,a.gongnuan_list_new_money as gongnuanListNewMoney
+        ,a.insert_time as insertTime
+        ,a.success_types as successTypes
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.GongnuanListView" >
+        SELECT
+        <include refid="Base_Column_List" />
+
+--         级联表的字段
+        ,gongnuan.yonghu_id as yonghuId
+        ,gongnuan.gongnuan_number as gongnuanNumber
+        ,gongnuan.gongnuan_money as gongnuanMoney
+        ,gongnuan.gongnuan_address as gongnuanAddress
+
+        FROM gongnuan_list  a
+        left JOIN gongnuan gongnuan ON a.gongnuan_id = gongnuan.id
+
+        <where>
+            <if test="params.gongnuanId != null">
+                and a.gongnuan_id = #{params.gongnuanId}
+            </if>
+            <if test="params.gongnuanListOldMoneyStart != null ">
+                <![CDATA[  and a.gongnuan_list_old_money >= #{params.gongnuanListOldMoneyStart}   ]]>
+            </if>
+            <if test="params.gongnuanListOldMoneyEnd != null ">
+                <![CDATA[  and a.gongnuan_list_old_money <= #{params.gongnuanListOldMoneyEnd}   ]]>
+            </if>
+            <if test="params.gongnuanListNewMoneyStart != null ">
+                <![CDATA[  and a.gongnuan_list_new_money >= #{params.gongnuanListNewMoneyStart}   ]]>
+            </if>
+            <if test="params.gongnuanListNewMoneyEnd != null ">
+                <![CDATA[  and a.gongnuan_list_new_money <= #{params.gongnuanListNewMoneyEnd}   ]]>
+            </if>
+            <if test=" params.insertTimeStart != '' and params.insertTimeStart != null ">
+                <![CDATA[  and DATE_FORMAT(a.insert_time, '%Y-%m-%d %H:%T:%s') >=
+                DATE_FORMAT(#{params.insertTimeStart}, '%Y-%m-%d %H:%T:%s')   ]]>
+            </if>
+            <if test=" params.insertTimeEnd != '' and params.insertTimeEnd != null ">
+                <![CDATA[  and DATE_FORMAT(a.insert_time, '%Y-%m-%d %H:%T:%s') <=
+                DATE_FORMAT(#{params.insertTimeEnd} , '%Y-%m-%d %H:%T:%s')    ]]>
+            </if>
+            <if test="params.successTypes != null">
+                and a.success_types = #{params.successTypes}
+            </if>
+
+            <if test="params.yonghuId != null">
+                and gongnuan.yonghu_id = #{params.yonghuId}
+            </if>
+            <if test=" params.gongnuanNumber != '' and params.gongnuanNumber != null and params.gongnuanNumber != 'null' ">
+                and gongnuan.gongnuan_number like CONCAT('%',#{params.gongnuanNumber},'%')
+            </if>
+            <if test="params.gongnuanMoneyStart != null ">
+                <![CDATA[  and gongnuan.gongnuan_money >= #{params.gongnuanMoneyStart}   ]]>
+            </if>
+            <if test="params.gongnuanMoneyEnd != null ">
+                <![CDATA[  and gongnuan.gongnuan_money <= #{params.gongnuanMoneyEnd}   ]]>
+            </if>
+            <if test=" params.gongnuanAddress != '' and params.gongnuanAddress != null and params.gongnuanAddress != 'null' ">
+                and gongnuan.gongnuan_address like CONCAT('%',#{params.gongnuanAddress},'%')
+            </if>
+        </where>
+        order by a.${params.orderBy} desc
+    </select>
+
+</mapper>

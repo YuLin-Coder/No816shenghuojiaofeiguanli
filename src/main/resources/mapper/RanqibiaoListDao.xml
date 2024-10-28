@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.RanqibiaoListDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.ranqibiao_id as ranqibiaoId
+        ,a.ranqibiao_list_old_money as ranqibiaoListOldMoney
+        ,a.ranqibiao_list_new_money as ranqibiaoListNewMoney
+        ,a.insert_time as insertTime
+        ,a.success_types as successTypes
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.RanqibiaoListView" >
+        SELECT
+        <include refid="Base_Column_List" />
+
+--         级联表的字段
+        ,ranqibiao.yonghu_id as yonghuId
+        ,ranqibiao.ranqibiao_number as ranqibiaoNumber
+        ,ranqibiao.ranqibiao_money as ranqibiaoMoney
+        ,ranqibiao.ranqibiao_address as ranqibiaoAddress
+
+        FROM ranqibiao_list  a
+        left JOIN ranqibiao ranqibiao ON a.ranqibiao_id = ranqibiao.id
+
+        <where>
+            <if test="params.ranqibiaoId != null">
+                and a.ranqibiao_id = #{params.ranqibiaoId}
+            </if>
+            <if test="params.ranqibiaoListOldMoneyStart != null ">
+                <![CDATA[  and a.ranqibiao_list_old_money >= #{params.ranqibiaoListOldMoneyStart}   ]]>
+            </if>
+            <if test="params.ranqibiaoListOldMoneyEnd != null ">
+                <![CDATA[  and a.ranqibiao_list_old_money <= #{params.ranqibiaoListOldMoneyEnd}   ]]>
+            </if>
+            <if test="params.ranqibiaoListNewMoneyStart != null ">
+                <![CDATA[  and a.ranqibiao_list_new_money >= #{params.ranqibiaoListNewMoneyStart}   ]]>
+            </if>
+            <if test="params.ranqibiaoListNewMoneyEnd != null ">
+                <![CDATA[  and a.ranqibiao_list_new_money <= #{params.ranqibiaoListNewMoneyEnd}   ]]>
+            </if>
+            <if test=" params.insertTimeStart != '' and params.insertTimeStart != null ">
+                <![CDATA[  and DATE_FORMAT(a.insert_time, '%Y-%m-%d %H:%T:%s') >=
+                DATE_FORMAT(#{params.insertTimeStart}, '%Y-%m-%d %H:%T:%s')   ]]>
+            </if>
+            <if test=" params.insertTimeEnd != '' and params.insertTimeEnd != null ">
+                <![CDATA[  and DATE_FORMAT(a.insert_time, '%Y-%m-%d %H:%T:%s') <=
+                DATE_FORMAT(#{params.insertTimeEnd} , '%Y-%m-%d %H:%T:%s')    ]]>
+            </if>
+            <if test="params.successTypes != null">
+                and a.success_types = #{params.successTypes}
+            </if>
+
+            <if test="params.yonghuId != null">
+                and ranqibiao.yonghu_id = #{params.yonghuId}
+            </if>
+            <if test=" params.ranqibiaoNumber != '' and params.ranqibiaoNumber != null and params.ranqibiaoNumber != 'null' ">
+                and ranqibiao.ranqibiao_number like CONCAT('%',#{params.ranqibiaoNumber},'%')
+            </if>
+            <if test="params.ranqibiaoMoneyStart != null ">
+                <![CDATA[  and ranqibiao.ranqibiao_money >= #{params.ranqibiaoMoneyStart}   ]]>
+            </if>
+            <if test="params.ranqibiaoMoneyEnd != null ">
+                <![CDATA[  and ranqibiao.ranqibiao_money <= #{params.ranqibiaoMoneyEnd}   ]]>
+            </if>
+            <if test=" params.ranqibiaoAddress != '' and params.ranqibiaoAddress != null and params.ranqibiaoAddress != 'null' ">
+                and ranqibiao.ranqibiao_address like CONCAT('%',#{params.ranqibiaoAddress},'%')
+            </if>
+        </where>
+        order by a.${params.orderBy} desc
+    </select>
+
+</mapper>

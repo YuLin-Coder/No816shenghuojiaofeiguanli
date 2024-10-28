@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.DianbiaoListDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.dianbiao_id as dianbiaoId
+        ,a.dianbiao_list_old_money as dianbiaoListOldMoney
+        ,a.dianbiao_list_new_money as dianbiaoListNewMoney
+        ,a.insert_time as insertTime
+        ,a.success_types as successTypes
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.DianbiaoListView" >
+        SELECT
+        <include refid="Base_Column_List" />
+
+--         级联表的字段
+        ,dianbiao.yonghu_id as yonghuId
+        ,dianbiao.dianbiao_number as dianbiaoNumber
+        ,dianbiao.dianbiao_money as dianbiaoMoney
+        ,dianbiao.dianbiao_address as dianbiaoAddress
+
+        FROM dianbiao_list  a
+        left JOIN dianbiao dianbiao ON a.dianbiao_id = dianbiao.id
+
+        <where>
+            <if test="params.dianbiaoId != null">
+                and a.dianbiao_id = #{params.dianbiaoId}
+            </if>
+            <if test="params.dianbiaoListOldMoneyStart != null ">
+                <![CDATA[  and a.dianbiao_list_old_money >= #{params.dianbiaoListOldMoneyStart}   ]]>
+            </if>
+            <if test="params.dianbiaoListOldMoneyEnd != null ">
+                <![CDATA[  and a.dianbiao_list_old_money <= #{params.dianbiaoListOldMoneyEnd}   ]]>
+            </if>
+            <if test="params.dianbiaoListNewMoneyStart != null ">
+                <![CDATA[  and a.dianbiao_list_new_money >= #{params.dianbiaoListNewMoneyStart}   ]]>
+            </if>
+            <if test="params.dianbiaoListNewMoneyEnd != null ">
+                <![CDATA[  and a.dianbiao_list_new_money <= #{params.dianbiaoListNewMoneyEnd}   ]]>
+            </if>
+            <if test=" params.insertTimeStart != '' and params.insertTimeStart != null ">
+                <![CDATA[  and DATE_FORMAT(a.insert_time, '%Y-%m-%d %H:%T:%s') >=
+                DATE_FORMAT(#{params.insertTimeStart}, '%Y-%m-%d %H:%T:%s')   ]]>
+            </if>
+            <if test=" params.insertTimeEnd != '' and params.insertTimeEnd != null ">
+                <![CDATA[  and DATE_FORMAT(a.insert_time, '%Y-%m-%d %H:%T:%s') <=
+                DATE_FORMAT(#{params.insertTimeEnd} , '%Y-%m-%d %H:%T:%s')    ]]>
+            </if>
+            <if test="params.successTypes != null">
+                and a.success_types = #{params.successTypes}
+            </if>
+
+            <if test="params.yonghuId != null">
+                and dianbiao.yonghu_id = #{params.yonghuId}
+            </if>
+            <if test=" params.dianbiaoNumber != '' and params.dianbiaoNumber != null and params.dianbiaoNumber != 'null' ">
+                and dianbiao.dianbiao_number like CONCAT('%',#{params.dianbiaoNumber},'%')
+            </if>
+            <if test="params.dianbiaoMoneyStart != null ">
+                <![CDATA[  and dianbiao.dianbiao_money >= #{params.dianbiaoMoneyStart}   ]]>
+            </if>
+            <if test="params.dianbiaoMoneyEnd != null ">
+                <![CDATA[  and dianbiao.dianbiao_money <= #{params.dianbiaoMoneyEnd}   ]]>
+            </if>
+            <if test=" params.dianbiaoAddress != '' and params.dianbiaoAddress != null and params.dianbiaoAddress != 'null' ">
+                and dianbiao.dianbiao_address like CONCAT('%',#{params.dianbiaoAddress},'%')
+            </if>
+        </where>
+        order by a.${params.orderBy} desc
+    </select>
+
+</mapper>
